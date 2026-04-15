@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>NEBULA DRIVE · Album Carousel + Tracklist</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: radial-gradient(circle at 10% 20%, #0c0218, #05010c);
+            font-family: 'Inter', system-ui, 'Segoe UI', 'Poppins', sans-serif;
+            color: #f0eaff;
+            overflow-x: hidden;
+        }
+
+        ::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #2a1b3a;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #b77eff;
+            border-radius: 10px;
+            box-shadow: 0 0 5px #c084fc;
+        }
+
+        .dashboard-nebula {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 1rem 1.5rem 2rem;
+        }
+
+        /* GLASS TOP BAR */
+        .top-glass {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            background: rgba(20, 10, 35, 0.55);
+            backdrop-filter: blur(14px);
+            border-radius: 60px;
+            padding: 0.6rem 1.8rem;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(183, 126, 255, 0.35);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4), 0 0 12px rgba(157, 78, 221, 0.3);
+        }
+        .logo-future {
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+        }
+        .logo-icon-neon {
+            background: linear-gradient(135deg, #b77eff, #9d4edd);
+            width: 38px;
+            height: 38px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            box-shadow: 0 0 10px #b77eff;
+        }
+        .logo-text-neon {
+            font-weight: 800;
+            font-size: 1.5rem;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, #ffffff, #d9b4ff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        /* SEARCH BAR */
+        .search-future {
+            flex: 1;
+            max-width: 380px;
+            position: relative;
+        }
+        .search-future .search-box {
+            display: flex;
+            align-items: center;
+            background: rgba(25, 12, 40, 0.8);
+            border-radius: 40px;
+            padding: 0.55rem 1.2rem;
+            border: 1px solid rgba(183, 126, 255, 0.5);
+            transition: all 0.2s;
+            backdrop-filter: blur(4px);
+        }
+        .search-future .search-box:focus-within {
+            border-color: #c084fc;
+            box-shadow: 0 0 15px #b77eff;
+        }
+        .search-future .search-box i {
+            color: #b77eff;
+            margin-right: 0.7rem;
+        }
+        .search-future .search-box input {
+            background: transparent;
+            border: none;
+            outline: none;
+            color: white;
+            width: 100%;
+            font-size: 0.9rem;
+        }
+        .clear-search {
+            background: none;
+            border: none;
+            color: #b77eff;
+            cursor: pointer;
+            display: none;
+        }
+
+        /* 3-COLUMN LAYOUT */
+        .dashboard-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.8rem;
+        }
+        .library-column {
+            flex: 1.1;
+            min-width: 260px;
+            background: rgba(12, 5, 22, 0.6);
+            backdrop-filter: blur(10px);
+            border-radius: 32px;
+            border: 1px solid rgba(157, 78, 221, 0.3);
+            padding: 1.2rem;
+            height: fit-content;
+            max-height: 78vh;
+            overflow-y: auto;
+        }
+        .center-column {
+            flex: 2;
+            min-width: 320px;
+            background: rgba(8, 3, 18, 0.5);
+            backdrop-filter: blur(12px);
+            border-radius: 44px;
+            padding: 1.4rem;
+            border: 1px solid rgba(183, 126, 255, 0.4);
+            box-shadow: 0 0 25px rgba(0, 0, 0, 0.6);
+        }
+        .tracklist-column {
+            flex: 0.9;
+            min-width: 260px;
+            background: rgba(15, 7, 28, 0.7);
+            backdrop-filter: blur(12px);
+            border-radius: 32px;
+            padding: 1.2rem;
+            border: 1px solid rgba(183, 126, 255, 0.4);
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        /* LIBRARY SONG LIST */
+        .section-neon {
+            font-size: 0.75rem;
+            letter-spacing: 1.5px;
+            font-weight: 600;
+            color: #cba6ff;
+            margin-bottom: 1rem;
+            border-left: 3px solid #b77eff;
+            padding-left: 0.8rem;
+        }
+        .all-music-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            max-height: 65vh;
+            overflow-y: auto;
+        }
+        .music-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 12px;
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.02);
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+        .music-item:hover {
+            background: rgba(183, 126, 255, 0.15);
+            border-color: rgba(183, 126, 255, 0.5);
+            transform: translateX(4px);
+        }
+        .music-item.active-track {
+            background: rgba(157, 78, 221, 0.35);
+            border-left: 3px solid #c084fc;
+            box-shadow: 0 0 8px #b77eff;
+        }
+        .music-cover-small {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            object-fit: cover;
+        }
+
+        /* ALBUM CAROUSEL (SLIDER) */
+        .carousel-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 1rem;
+            color: #e2c6ff;
+            font-weight: 600;
+        }
+        .carousel-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .carousel-track-wrapper {
+            overflow-x: auto;
+            scroll-behavior: smooth;
+            scrollbar-width: thin;
+            flex: 1;
+            border-radius: 28px;
+        }
+        .carousel-track {
+            display: flex;
+            gap: 1rem;
+            padding: 0.2rem 0.2rem 0.8rem;
+        }
+        .album-carousel-card {
+            min-width: 130px;
+            background: rgba(25, 12, 45, 0.7);
+            border-radius: 24px;
+            padding: 0.8rem 0.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.25s;
+            border: 1px solid rgba(157, 78, 221, 0.4);
+            backdrop-filter: blur(4px);
+        }
+        .album-carousel-card:hover {
+            border-color: #b77eff;
+            transform: translateY(-6px);
+            box-shadow: 0 0 20px rgba(183, 126, 255, 0.4);
+        }
+        .album-carousel-card img {
+            width: 90px;
+            height: 90px;
+            border-radius: 20px;
+            object-fit: cover;
+            margin-bottom: 0.5rem;
+            box-shadow: 0 8px 14px rgba(0,0,0,0.5);
+        }
+        .carousel-arrow {
+            background: rgba(183, 126, 255, 0.25);
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            color: white;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .carousel-arrow:hover {
+            background: #b77eff;
+            box-shadow: 0 0 12px #b77eff;
+        }
+
+        /* PLAYER CORE */
+        .player-core {
+            margin-top: 1.5rem;
+            text-align: center;
+        }
+        .album-art-futuristic {
+            position: relative;
+            display: inline-block;
+        }
+        .main-album-cover {
+            width: 220px;
+            height: 220px;
+            border-radius: 38px;
+            object-fit: cover;
+            box-shadow: 0 20px 35px rgba(0, 0, 0, 0.6);
+            transition: 0.2s;
+            border: 2px solid rgba(183, 126, 255, 0.5);
+        }
+        .glow-ring {
+            position: absolute;
+            top: -8px;
+            left: -8px;
+            right: -8px;
+            bottom: -8px;
+            border-radius: 48px;
+            background: radial-gradient(circle, rgba(183,126,255,0.3), transparent);
+            opacity: 0.6;
+            pointer-events: none;
+            animation: pulseGlow 2s infinite alternate;
+        }
+        @keyframes pulseGlow {
+            0% { opacity: 0.3; transform: scale(0.98);}
+            100% { opacity: 1; transform: scale(1.02); box-shadow: 0 0 25px #b77eff;}
+        }
+        .track-name {
+            font-size: 1.7rem;
+            font-weight: 800;
+            margin-top: 1rem;
+            background: linear-gradient(135deg, #fff, #d9b4ff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .artist-name {
+            color: #bc9eff;
+            margin-bottom: 0.5rem;
+        }
+        .progress-bar-bg {
+            background: #2a1b3a;
+            height: 6px;
+            border-radius: 10px;
+            cursor: pointer;
+            margin: 1rem 0 0.3rem;
+        }
+        .progress-fill {
+            background: linear-gradient(90deg, #b77eff, #e0aaff);
+            width: 0%;
+            height: 6px;
+            border-radius: 10px;
+        }
+        .time-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.7rem;
+            margin-top: 5px;
+        }
+        .player-controls {
+            display: flex;
+            justify-content: center;
+            gap: 1.4rem;
+            margin: 1.2rem 0;
+        }
+        .ctrl-btn {
+            background: rgba(183, 126, 255, 0.2);
+            border: none;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            font-size: 1.2rem;
+            color: white;
+            cursor: pointer;
+            transition: 0.15s;
+        }
+        .ctrl-btn.big-play {
+            background: #b77eff;
+            width: 60px;
+            height: 60px;
+            box-shadow: 0 0 12px #b77eff;
+        }
+        .ctrl-btn:hover {
+            background: #c084fc;
+            transform: scale(1.05);
+        }
+        .volume-row {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            align-items: center;
+        }
+        input[type="range"] {
+            background: #3a2a4a;
+            height: 4px;
+            border-radius: 5px;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            background: #c084fc;
+            box-shadow: 0 0 6px #b77eff;
+        }
+
+        /* TRACKLIST PANEL (replaces AI) */
+        .tracklist-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid rgba(183, 126, 255, 0.4);
+            padding-bottom: 0.6rem;
+            margin-bottom: 1rem;
+        }
+        .tracklist-header i {
+            font-size: 1.3rem;
+            color: #b77eff;
+        }
+        .tracklist-header h4 {
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+        .album-tracklist {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 65vh;
+            overflow-y: auto;
+        }
+        .tracklist-song {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 8px 12px;
+            border-radius: 18px;
+            cursor: pointer;
+            transition: all 0.15s;
+            border: 1px solid transparent;
+        }
+        .tracklist-song:hover {
+            background: rgba(183, 126, 255, 0.2);
+            border-color: #b77eff;
+            transform: translateX(3px);
+        }
+        .tracklist-song.active-track {
+            background: rgba(157, 78, 221, 0.4);
+            border-left: 3px solid #c084fc;
+        }
+        .tracklist-song img {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            object-fit: cover;
+        }
+        .tracklist-info {
+            flex: 1;
+        }
+        .tracklist-title {
+            font-weight: 500;
+            font-size: 0.85rem;
+        }
+        .tracklist-artist {
+            font-size: 0.7rem;
+            color: #c2a5ff;
+        }
+        .no-album-msg {
+            text-align: center;
+            padding: 2rem;
+            color: #a07ed6;
+            font-size: 0.85rem;
+        }
+
+        @media (max-width: 980px) {
+            .dashboard-grid {
+                flex-direction: column;
+            }
+            .main-album-cover {
+                width: 170px;
+                height: 170px;
+            }
+        }
+        .no-results {
+            text-align: center;
+            padding: 2rem;
+            color: #b99eff;
+        }
+    </style>
+</head>
+<body>
+<div class="dashboard-nebula">
+    <div class="top-glass">
+        <div class="logo-future">
+            <div class="logo-icon-neon"><i class="fas fa-car-side"></i></div>
+            <div class="logo-text-neon">NEBULA XR PLAYER</div>
+        </div>
+        <div class="search-future">
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="Search song or artist...">
+                <button class="clear-search" id="clearSearchBtn"><i class="fas fa-times-circle"></i></button>
+            </div>
+        </div>
+        <div style="width: 42px;"></div> <!-- spacer for balance -->
+    </div>
+
+    <div class="dashboard-grid">
+        <!-- LEFT: ALL SONGS (filterable) -->
+        <div class="library-column">
+            <div class="section-neon"><i class="fas fa-database"></i> DIGITAL VAULT · 25 TRACKS</div>
+            <div id="allMusicList" class="all-music-list"></div>
+        </div>
+
+        <!-- CENTER: CAROUSEL + PLAYER -->
+        <div class="center-column">
+            <div class="carousel-title">
+                <span><i class="fas fa-cube"></i> ALBUM CAROUSEL</span>
+                <span style="font-size:0.7rem;">✧ click album to see tracks ✧</span>
+            </div>
+            <div class="carousel-container">
+                <button class="carousel-arrow left" id="carouselPrevBtn"><i class="fas fa-chevron-left"></i></button>
+                <div class="carousel-track-wrapper" id="carouselWrapper">
+                    <div class="carousel-track" id="albumCarouselTrack"></div>
+                </div>
+                <button class="carousel-arrow right" id="carouselNextBtn"><i class="fas fa-chevron-right"></i></button>
+            </div>
+
+            <div class="player-core">
+                <div class="album-art-futuristic">
+                    <img id="dynamicCover" class="main-album-cover" src="1.jpg" alt="cover">
+                    <div class="glow-ring"></div>
+                </div>
+                <div class="track-name" id="nowTitle">Susmaryosep</div>
+                <div class="artist-name" id="nowArtist">Warhogs</div>
+                <div class="progress-wrapper">
+                    <div class="progress-bar-bg" id="progressBg">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <div class="time-row">
+                        <span id="currentTimeLabel">0:00</span>
+                        <span id="durationLabel">0:00</span>
+                    </div>
+                </div>
+                <div class="player-controls">
+                    <button class="ctrl-btn" id="shuffleAction"><i class="fas fa-random"></i></button>
+                    <button class="ctrl-btn" id="prevAction"><i class="fas fa-step-backward"></i></button>
+                    <button class="ctrl-btn big-play" id="playPauseMain"><i class="fas fa-play"></i></button>
+                    <button class="ctrl-btn" id="nextAction"><i class="fas fa-step-forward"></i></button>
+                    <button class="ctrl-btn" id="repeatAction"><i class="fas fa-redo"></i></button>
+                </div>
+                <div class="volume-row">
+                    <i class="fas fa-volume-up" style="color:#c084fc;"></i>
+                    <input type="range" id="volumeRange" min="0" max="100" value="70">
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT: ALBUM TRACKLIST (dynamic) -->
+        <div class="tracklist-column">
+            <div class="tracklist-header">
+                <i class="fas fa-list-ul"></i>
+                <h4 id="tracklistAlbumName">SELECT ALBUM</h4>
+            </div>
+            <div id="albumTracklistContainer" class="album-tracklist">
+                <div class="no-album-msg">
+                    <i class="fas fa-music"></i><br>
+                    Click any album in the carousel<br>to see its 5 tracks
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ============================================================
+    // 25 SONGS DATA (same as original with covers/artists)
+    // ============================================================
+    const CUSTOM_SONG_COVERS = [
+        "26.jpg", "27.jpg", "28.jpg", "29.jpg", "30.jpg",
+        "31.jpg", "32.jpg", "33.jpg", "34.jpg", "35.jpg",
+        "36.jpg", "37.jpg", "38.jpg", "39.jpg", "40.jpg",
+        "41.jpg", "42.jpg", "43.jpg", "44.jpg", "45.jpg",
+        "46.jpg",  "47.jpg","48.jpg", "49.jpg", "50.jpg",
+    ];
+    const SONG_ARTISTS = [
+        "LANY", "LANY", "LANY", "LANY", "LANY",
+        "Midnasty","Midnasty","Midnasty","Midnasty","Midnasty",
+        "Coldplay","Coldplay","Coldplay","Coldplay","Coldplay",
+        "The Weeknd","The Weeknd","The Weeknd","The Weeknd","The Weeknd",
+        "Fetty Wap","Fetty Wap","Fetty Wap","Fetty Wap","Fetty Wap",
+    ];
+    const ALBUMS_RAW = [
+        { id:0, name:"LANY", tracks:[
+            { title:"Malibu Nights", duration:"4:37", src:"LANY - Malibu Nights (Official Music Video).mp3" },
+            { title:"ILYSB", duration:"3:38", src:"LANY - ILYSB (Official Video).mp3" },
+            { title:"13", duration:"3:56", src:"LANY - 13 (Official Audio).mp3" },
+            { title:"Super Far", duration:"3:38", src:"LANY - Super Far (Official Video).mp3" },
+            { title:"Mean It", duration:"3:35", src:"Lauv & LANY - Mean It [Official Video].mp3"}
+        ]},
+        { id:1, name:"Midnasty", tracks:[
+            { title:  "Illonga", duration: "4:13",src: "Midnasty - Ilongga (Official Music Video).mp3" },
+            { title:  "mYstakes", duration: "4:08",src: "Midnasty - mYstakes (Official Music Video).mp3" },
+            { title:  "Bisag Asa", duration: "4:13",src: "Midnasty - Bisag Asa (Lyric Video) (SUB_ English Decode).mp3" },
+            { title:  "Cegurado", duration: "3:53",src: "Midnasty - Cegurado.mp3" },
+            { title:  "Lame", duration: "3:58",src: "Midnasty - Lame.mp3" },
+        ]},
+        { id:2, name:"Coldplay", tracks:[
+            { title:  "Coldplay", duration: "4:25",src: "Coldplay - The Scientist (Official 4K Video).mp3" },
+            { title:  "Yellow", duration: "4:32",src: "Coldplay - Yellow (Official Video).mp3" },
+            { title:  "A Sky Full Of Stars", duration: "4:13",src: "Coldplay - A Sky Full Of Stars (Official Video).mp3" },
+            { title:  " In My Place", duration: "3:46",src: "Coldplay - In My Place (Official 4K Video).mp3" },
+            { title:  "Biutyful", duration: "4:59",src: "Coldplay - Biutyful (Official Video).mp3" },
+        ]},
+        { id:3, name:"The Weekend", tracks:[
+            { title: "Die For You", duration: "3:54", src: "The Weeknd - Die For You.mp3" },
+            { title:  "Reminder", duration: "3:50",src: "The Weeknd - Reminder (Official Video).mp3" },
+            { title:  "After Hours", duration: "6:02",src: "The Weeknd - After Hours (Music Video).mp3" },
+            { title: "Save your Tears", duration: "4:08", src: "The Weeknd - Save Your Tears (Official Music Video).mp3" },
+            { title:  "Call Out My Name", duration: "3:58",src: "The Weeknd - Save Your Tears (Official Music Video).mp3" },
+        ]},
+        { id:4, name:"Fetty Wap", tracks:[
+            { title:  "Trap Queen", duration: "4:04",src: "Fetty Wap  - Trap Queen (Official Video) Prod. By Tony Fadd.mp3" },
+            { title:  "Nobody's Better", duration: "3:39",src: "Suzi ft. Fetty Wap - Nobody's Better (Official Music Video).mp3" },
+            { title:  "My Way", duration: "3:50",src: "Fetty Wap My Way feat. Monty [Official Video].mp3" },
+            { title:  "679", duration: "3:43",src: "Fetty Wap 679 feat. Remy Boyz [Official Video].mp3" },
+            { title:  "Again", duration: "5:12",src: "Fetty Wap  - Again [Audio Only].mp3" },
+        ]}
+    ];
+
+    // Build master playlist (25 songs)
+    let masterPlaylist = [];
+    let songCounter = 0;
+    for (let a = 0; a < ALBUMS_RAW.length; a++) {
+        const album = ALBUMS_RAW[a];
+        for (let t = 0; t < album.tracks.length; t++) {
+            const track = album.tracks[t];
+            masterPlaylist.push({
+                id: `${album.id}-${t}`,
+                title: track.title,
+                artist: SONG_ARTISTS[songCounter],
+                albumName: album.name,
+                cover: CUSTOM_SONG_COVERS[songCounter % CUSTOM_SONG_COVERS.length],
+                src: track.src,
+                duration: track.duration,
+                albumId: album.id,
+                trackIndex: t
+            });
+            songCounter++;
+        }
+    }
+
+    // Albums enriched with covers
+    const ALBUMS = ALBUMS_RAW.map((album, idx) => {
+        const firstSong = masterPlaylist[idx*5];
+        return {
+            ...album,
+            cover: firstSong?.cover || "1.jpg",
+            tracks: album.tracks.map((track, tIdx) => {
+                const songData = masterPlaylist[idx*5 + tIdx];
+                return {
+                    ...track,
+                    cover: songData.cover,
+                    artist: songData.artist,
+                    songId: songData.id
+                };
+            })
+        };
+    });
+
+    // Player state
+    let audio = new Audio();
+    let currentSongIndex = 0;
+    let isPlaying = false;
+    let shuffleActive = false;
+    let repeatMode = "none";
+    let shuffledOrder = null;
+    let currentSearchQuery = "";
+
+    // DOM elements
+    const allMusicContainer = document.getElementById('allMusicList');
+    const coverImg = document.getElementById('dynamicCover');
+    const nowTitleSpan = document.getElementById('nowTitle');
+    const nowArtistSpan = document.getElementById('nowArtist');
+    const playPauseBtn = document.getElementById('playPauseMain');
+    const prevBtn = document.getElementById('prevAction');
+    const nextBtn = document.getElementById('nextAction');
+    const shuffleBtn = document.getElementById('shuffleAction');
+    const repeatBtn = document.getElementById('repeatAction');
+    const progressFill = document.getElementById('progressFill');
+    const progressBg = document.getElementById('progressBg');
+    const currentTimeSpan = document.getElementById('currentTimeLabel');
+    const durationSpan = document.getElementById('durationLabel');
+    const volumeSlider = document.getElementById('volumeRange');
+    const searchInput = document.getElementById('searchInput');
+    const clearSearchBtn = document.getElementById('clearSearchBtn');
+    const carouselTrack = document.getElementById('albumCarouselTrack');
+    const tracklistContainer = document.getElementById('albumTracklistContainer');
+    const tracklistAlbumNameSpan = document.getElementById('tracklistAlbumName');
+
+    // Helper functions
+    function getCurrentOrder() {
+        if (shuffleActive && shuffledOrder) return shuffledOrder;
+        return masterPlaylist.map((_, idx) => idx);
+    }
+
+    function getFilteredSongs() {
+        if (!currentSearchQuery.trim()) return masterPlaylist;
+        const q = currentSearchQuery.toLowerCase();
+        return masterPlaylist.filter(s => s.title.toLowerCase().includes(q) || s.artist.toLowerCase().includes(q));
+    }
+
+    function escapeHtml(str) { return str; }
+
+    // Render all songs (left panel)
+    function renderAllMusic() {
+        const filtered = getFilteredSongs();
+        if (filtered.length === 0) {
+            allMusicContainer.innerHTML = '<div class="no-results"><i class="fas fa-ghost"></i> No match found</div>';
+            return;
+        }
+        allMusicContainer.innerHTML = '';
+        filtered.forEach(song => {
+            const origIdx = masterPlaylist.findIndex(s => s.id === song.id);
+            const div = document.createElement('div');
+            div.className = `music-item ${origIdx === currentSongIndex ? 'active-track' : ''}`;
+            div.innerHTML = `<img class="music-cover-small" src="${song.cover}"><div class="music-details"><div class="music-title">${escapeHtml(song.title)}</div><div class="music-artist">${escapeHtml(song.artist)}</div></div>`;
+            div.addEventListener('click', () => { loadSong(origIdx); audio.play().catch(()=>{}); });
+            allMusicContainer.appendChild(div);
+        });
+    }
+
+    // Load a specific song by index
+    function loadSong(index) {
+        if (index < 0) index = 0;
+        if (index >= masterPlaylist.length) index = 0;
+        currentSongIndex = index;
+        const s = masterPlaylist[currentSongIndex];
+        audio.src = s.src;
+        coverImg.src = s.cover;
+        nowTitleSpan.innerText = s.title;
+        nowArtistSpan.innerText = s.artist;
+        audio.load();
+        if (isPlaying) audio.play().catch(e=>console.warn);
+        renderAllMusic();
+        // Highlight track in tracklist if current album is displayed
+        highlightCurrentTrackInTracklist();
+    }
+
+    // Highlight active song inside the tracklist panel
+    function highlightCurrentTrackInTracklist() {
+        const currentAlbum = masterPlaylist[currentSongIndex]?.albumName;
+        if (!currentAlbum) return;
+        const displayedAlbumName = tracklistAlbumNameSpan.innerText.replace('TRACKS · ', '');
+        if (displayedAlbumName === currentAlbum || tracklistAlbumNameSpan.innerText.includes(currentAlbum)) {
+            // re-render the current album tracklist to update active class
+            const albumObj = ALBUMS.find(a => a.name === currentAlbum);
+            if (albumObj) renderAlbumTracklist(albumObj);
+        }
+    }
+
+    // RENDER ALBUM TRACKLIST IN RIGHT PANEL (5 songs)
+    function renderAlbumTracklist(album) {
+        tracklistAlbumNameSpan.innerText = `TRACKS · ${album.name}`;
+        tracklistContainer.innerHTML = '';
+        const songsOfAlbum = masterPlaylist.filter(song => song.albumName === album.name);
+        songsOfAlbum.forEach((song, idx) => {
+            const row = document.createElement('div');
+            row.className = `tracklist-song ${song.id === masterPlaylist[currentSongIndex]?.id ? 'active-track' : ''}`;
+            row.innerHTML = `
+                <img src="${song.cover}">
+                <div class="tracklist-info">
+                    <div class="tracklist-title">${idx+1}. ${escapeHtml(song.title)}</div>
+                    <div class="tracklist-artist">${escapeHtml(song.artist)}</div>
+                </div>
+            `;
+            const globalIndex = masterPlaylist.findIndex(s => s.id === song.id);
+            row.addEventListener('click', () => {
+                loadSong(globalIndex);
+                audio.play().catch(()=>{});
+            });
+            tracklistContainer.appendChild(row);
+        });
+    }
+
+    // CAROUSEL RENDERING
+    function renderCarousel() {
+        carouselTrack.innerHTML = '';
+        ALBUMS.forEach(album => {
+            const card = document.createElement('div');
+            card.className = 'album-carousel-card';
+            card.setAttribute('data-album', album.name);
+            card.innerHTML = `<img src="${album.cover}"><div style="font-weight:600;">${album.name}</div><div style="font-size:0.65rem;">✧ 5 tracks ✧</div>`;
+            card.addEventListener('click', () => {
+                // Display the 5 songs of this album in right panel
+                renderAlbumTracklist(album);
+            });
+            carouselTrack.appendChild(card);
+        });
+    }
+
+    // carousel scroll buttons
+    const wrapper = document.getElementById('carouselWrapper');
+    document.getElementById('carouselPrevBtn').addEventListener('click', () => { wrapper.scrollBy({ left: -200, behavior: 'smooth' }); });
+    document.getElementById('carouselNextBtn').addEventListener('click', () => { wrapper.scrollBy({ left: 200, behavior: 'smooth' }); });
+
+    // Player controls
+    function playPause() { isPlaying ? audio.pause() : audio.play(); }
+    function nextTrack() {
+        const order = getCurrentOrder();
+        let pos = order.findIndex(idx => idx === currentSongIndex);
+        if (pos === -1) pos = 0;
+        let nextPos = pos+1;
+        if (nextPos >= order.length) nextPos = (repeatMode === "all" || repeatMode === "none") ? 0 : currentSongIndex;
+        if (repeatMode === "one") { audio.currentTime = 0; audio.play(); return; }
+        const newIdx = order[nextPos];
+        loadSong(newIdx);
+        audio.play().catch(()=>{});
+    }
+    function prevTrack() {
+        const order = getCurrentOrder();
+        let pos = order.findIndex(idx => idx === currentSongIndex);
+        if (pos === -1) pos = 0;
+        let prevPos = pos-1;
+        if (prevPos < 0) prevPos = order.length-1;
+        loadSong(order[prevPos]);
+        audio.play().catch(()=>{});
+    }
+    function toggleShuffle() {
+        shuffleActive = !shuffleActive;
+        if (shuffleActive) {
+            shuffledOrder = [...Array(masterPlaylist.length).keys()];
+            for (let i = shuffledOrder.length-1; i>0; i--) { const j = Math.floor(Math.random()*(i+1)); [shuffledOrder[i], shuffledOrder[j]] = [shuffledOrder[j], shuffledOrder[i]]; }
+            if (!shuffledOrder.includes(currentSongIndex)) shuffledOrder[0] = currentSongIndex;
+            shuffleBtn.style.color = "#c084fc";
+        } else { shuffledOrder = null; shuffleBtn.style.color = "white"; }
+    }
+    function toggleRepeat() {
+        if (repeatMode === "none") { repeatMode = "all"; repeatBtn.style.color = "#c084fc"; repeatBtn.innerHTML = '<i class="fas fa-redo-alt"></i>'; }
+        else if (repeatMode === "all") { repeatMode = "one"; repeatBtn.innerHTML = '<i class="fas fa-repeat-1"></i>'; }
+        else { repeatMode = "none"; repeatBtn.style.color = "white"; repeatBtn.innerHTML = '<i class="fas fa-redo"></i>'; }
+    }
+    function updatePlayButton(playing) { isPlaying = playing; playPauseBtn.innerHTML = playing ? '<i class="fas fa-pause"></i>' : '<i class="fas fa-play"></i>'; }
+    function formatTime(sec) { if (isNaN(sec)) return "0:00"; const m = Math.floor(sec/60); const s = Math.floor(sec%60); return `${m}:${s.toString().padStart(2,'0')}`; }
+    function updateProgress() { if (audio.duration) { progressFill.style.width = `${(audio.currentTime/audio.duration)*100}%`; currentTimeSpan.innerText = formatTime(audio.currentTime); durationSpan.innerText = formatTime(audio.duration); } }
+    function setProgress(e) { const rect = progressBg.getBoundingClientRect(); const percent = (e.clientX - rect.left) / rect.width; if (audio.duration) audio.currentTime = percent * audio.duration; }
+
+    // Search logic
+    function handleSearch() { currentSearchQuery = searchInput.value; renderAllMusic(); clearSearchBtn.style.display = currentSearchQuery ? 'block' : 'none'; }
+    function clearSearch() { searchInput.value = ''; currentSearchQuery = ''; renderAllMusic(); clearSearchBtn.style.display = 'none'; searchInput.focus(); }
+
+    // Audio event binding
+    function initAudioEvents() {
+        audio.addEventListener('timeupdate', updateProgress);
+        audio.addEventListener('loadedmetadata', () => { durationSpan.innerText = formatTime(audio.duration); });
+        audio.addEventListener('play', () => updatePlayButton(true));
+        audio.addEventListener('pause', () => updatePlayButton(false));
+        audio.addEventListener('ended', () => { if (repeatMode === "one") { audio.currentTime = 0; audio.play(); } else nextTrack(); });
+        volumeSlider.addEventListener('input', (e) => audio.volume = e.target.value/100);
+        audio.volume = 0.7;
+    }
+
+    // Initialization
+    function init() {
+        renderCarousel();
+        renderAllMusic();
+        initAudioEvents();
+        loadSong(0);
+        playPauseBtn.addEventListener('click', playPause);
+        prevBtn.addEventListener('click', prevTrack);
+        nextBtn.addEventListener('click', nextTrack);
+        shuffleBtn.addEventListener('click', toggleShuffle);
+        repeatBtn.addEventListener('click', toggleRepeat);
+        progressBg.addEventListener('click', setProgress);
+        searchInput.addEventListener('input', handleSearch);
+        clearSearchBtn.addEventListener('click', clearSearch);
+        // Default: show first album tracks
+        if (ALBUMS.length) renderAlbumTracklist(ALBUMS[0]);
+    }
+    init();
+</script>
+</body>
+</html>
